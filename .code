@@ -1,0 +1,24 @@
+```kotlin
+
+
+class RecentContactStore(private val context: Context) {
+  private val dataStore = context.createDataStore("recent_contacts")
+
+  companion object {
+    private const val KEY = "recent_eids"
+    private const val MAX_RECENTS = 10
+  }
+
+  suspend fun addRecent(eid: String) {
+    dataStore.edit { prefs ->
+      val existing = prefs[preferencesKey<String>(KEY)]?.split(",") ?: emptyList()
+      val updated = (listOf(eid) + existing).distinct().take(MAX_RECENTS)
+      prefs[preferencesKey<String>(KEY)] = updated.joinToString(",")
+    }
+  }
+
+  suspend fun getRecents(): List<String> {
+    val prefs = dataStore.data.first()
+    return prefs[preferencesKey<String>(KEY)]?.split(",") ?: emptyList()
+  }
+}
