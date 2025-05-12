@@ -22,3 +22,31 @@ class RecentContactStore(private val context: Context) {
     return prefs[preferencesKey<String>(KEY)]?.split(",") ?: emptyList()
   }
 }
+
+
+
+
+@Entity(tableName = "followed_contacts")
+data class FollowedContact(
+  @PrimaryKey val eid: String,
+  val addedAt: Long = System.currentTimeMillis()
+)
+
+
+@Dao
+interface FollowedContactDao {
+  @Insert(onConflict = REPLACE)
+  suspend fun follow(contact: FollowedContact)
+
+  @Delete
+  suspend fun unfollow(contact: FollowedContact)
+
+  @Query("SELECT * FROM followed_contacts")
+  suspend fun getAll(): List<FollowedContact>
+
+  @Query("SELECT EXISTS(SELECT 1 FROM followed_contacts WHERE eid = :eid)")
+  suspend fun isFollowed(eid: String): Boolean
+}
+
+
+
